@@ -9,13 +9,12 @@ FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
 
-# Clone the repository
-RUN apt-get update && apt-get install -y git
-RUN git clone https://github.com/FernandoEwald2/LocalInfoReceiver.git .
-
-# Copy and restore dependencies
-COPY ["Api/Api.csproj", "Api/"] 2>/dev/null || echo "Using cloned project files"
+# Copy and restore dependencies (os arquivos já estão disponíveis pelo git clone do docker-compose)
+COPY ["Api/Api.csproj", "Api/"]
 RUN dotnet restore "./Api/Api.csproj"
+
+# Copy all source files
+COPY . .
 
 # Build the application
 WORKDIR "/src/Api"
