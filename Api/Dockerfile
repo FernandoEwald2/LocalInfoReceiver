@@ -21,15 +21,20 @@ FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
 
-# Instala dotnet-ef
-RUN dotnet tool install --global dotnet-ef \
-    && export PATH="$PATH:/root/.dotnet/tools"
+# Copia o start.sh
+COPY start.sh /app/start.sh
+RUN chmod +x /app/start.sh
+
+# Instala dotnet-ef globalmente
+RUN dotnet tool install --global dotnet-ef
 
 # Variáveis de ambiente
 ENV WT_SECRET="8as22uo61shI112)Ts0oOUSaoHssiiNRjshIh7Ga17ja77huo*iH0a800sTHaaij"
 ENV DB_NAME="localzap"
 ENV DB_USER="default"
 ENV DB_PASSWORD="Ew@ldP@$$123"
+ENV PATH="$PATH:/root/.dotnet/tools"
 
-# Entrypoint: roda migration antes de iniciar
-ENTRYPOINT /bin/bash -c "dotnet ef database update && dotnet Api.dll --urls http://0.0.0.0:5000"
+# Entrypoint: roda migrations e inicia API
+ENTRYPOINT ["/bin/sh", "/app/start.sh"]
+
