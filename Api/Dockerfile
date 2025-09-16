@@ -7,9 +7,8 @@ EXPOSE 5000
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Clona o repositório usando token passado como ARG
-ARG GITHUB_TOKEN
-RUN git clone https://$GITHUB_TOKEN@github.com/FernandoEwald2/LocalInfoReceiver.git .
+# Copia apenas a pasta da API local
+COPY Api/ ./Api/
 
 WORKDIR /src/Api
 RUN dotnet restore "./Api.csproj"
