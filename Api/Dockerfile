@@ -1,34 +1,28 @@
-# Base runtime
+# This stage is used when running from VS in fast mode (Default for Debug configuration)
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+USER $APP_UID
 WORKDIR /app
-EXPOSE 5000
+EXPOSE 8080
+EXPOSE 8081
 
-# Build SDK
+
+# This stage is used to build the service project
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+ARG BUILD_CONFIGURATION=Release
 WORKDIR /src
+COPY ["Api/Api.csproj", "Api/"]
+RUN dotnet restore "./Api/Api.csproj"
+COPY . .
+WORKDIR "/src/Api"
+RUN dotnet build "./Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
 
-# Copia apenas a pasta da API local
-COPY Api/ ./Api/
+# This stage is used to publish the service project to be copied to the final stage
+FROM build AS publish
+ARG BUILD_CONFIGURATION=Release
+RUN dotnet publish "./Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
 
-WORKDIR /src/Api
-RUN dotnet restore "./Api.csproj"
-RUN dotnet build "./Api.csproj" -c Release -o /app/build
-RUN dotnet publish "./Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
-
-# Final image
+# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
 FROM base AS final
 WORKDIR /app
-COPY --from=build /app/publish .
-
-# Instala dotnet-ef
-RUN dotnet tool install --global dotnet-ef
-ENV PATH="$PATH:/root/.dotnet/tools"
-
-# Variáveis de ambiente internas
-ENV WT_SECRET="8as22uo61shI112)Ts0oOUSaoHssiiNRjshIh7Ga17ja77huo*iH0a800sTHaaij"
-ENV DB_NAME="localzap"
-ENV DB_USER="default"
-ENV DB_PASSWORD="Ew@ldP@$$123"
-
-# Entry point: roda migrations e inicia a API
-ENTRYPOINT ["sh", "-c", "dotnet ef database update && dotnet Api.dll --urls http://0.0.0.0:5000"]
+COPY --from=publish /app/publish .
+ENTRYPOINT ["dotnet", "Api.dll"]
