@@ -6,35 +6,30 @@ EXPOSE 5000
 # Build SDK
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
-COPY ["Api/Api.csproj", "Api/"]
-RUN dotnet restore "./Api/Api.csproj"
-COPY . .
-WORKDIR "/src/Api"
-RUN dotnet build "./Api.csproj" -c Release -o /app/build
 
-# Publish
-FROM build AS publish
+# Clona o repositório usando token passado como ARG
+ARG GITHUB_TOKEN
+RUN git clone https://$GITHUB_TOKEN@github.com/FernandoEwald2/LocalInfoReceiver.git .
+
+WORKDIR /src/Api
+RUN dotnet restore "./Api.csproj"
+RUN dotnet build "./Api.csproj" -c Release -o /app/build
 RUN dotnet publish "./Api.csproj" -c Release -o /app/publish /p:UseAppHost=false
 
 # Final image
 FROM base AS final
 WORKDIR /app
-COPY --from=publish /app/publish .
+COPY --from=build /app/publish .
 
-# Copia o start.sh
-COPY start.sh /app/start.sh
-RUN chmod +x /app/start.sh
-
-# Instala dotnet-ef globalmente
+# Instala dotnet-ef
 RUN dotnet tool install --global dotnet-ef
+ENV PATH="$PATH:/root/.dotnet/tools"
 
-# Variáveis de ambiente
+# Variáveis de ambiente internas
 ENV WT_SECRET="8as22uo61shI112)Ts0oOUSaoHssiiNRjshIh7Ga17ja77huo*iH0a800sTHaaij"
 ENV DB_NAME="localzap"
 ENV DB_USER="default"
 ENV DB_PASSWORD="Ew@ldP@$$123"
-ENV PATH="$PATH:/root/.dotnet/tools"
 
-# Entrypoint: roda migrations e inicia API
-ENTRYPOINT ["/bin/sh", "/app/start.sh"]
-
+# Entry point: roda migrations e inicia a API
+ENTRYPOINT ["sh", "-c", "dotnet ef database update && dotnet Api.dll --urls http://0.0.0.0:5000"]
