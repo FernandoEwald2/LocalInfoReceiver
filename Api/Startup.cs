@@ -41,7 +41,7 @@ public class Startup
         services.AddScoped<IAuthService, AuthService>();
 
         // Adiciona autenticação JWT
-        var jwtSecretKey = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("WT_SECRET"));
+        var jwtSecretKey = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET"));
 
         services.AddAuthentication(x =>
         {
