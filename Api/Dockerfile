@@ -1,32 +1,48 @@
-# This stage is used when running from VS in fast mode (Default for Debug configuration)
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
+ROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+
+# Instalar git
+RUN apt-get update && apt-get install -y git
+
+# Clonar o repositório
+RUN git clone https://github.com/FernandoEwald2/LocalInfoReceiver.git /app
+
+# Definir diretório de trabalho
+WORKDIR /app/Api
+
+# Instalar ferramenta Entity Framework globalmente
+RUN dotnet tool install --global dotnet-ef
+
+# Adicionar ferramentas ao PATH
+ENV PATH="${PATH}:/root/.dotnet/tools"
+
+# Instalar pacotes NuGet específicos
+RUN dotnet add package Microsoft.EntityFrameworkCore.Tools --version 8.0.20
+RUN dotnet add package Microsoft.AspNetCore.Authentication.JwtBearer --version 8.0.20
+RUN dotnet add package Microsoft.EntityFrameworkCore --version 8.0.20
+RUN dotnet add package Microsoft.EntityFrameworkCore.Design --version 8.0.20
+RUN dotnet add package Npgsql.EntityFrameworkCore.PostgreSQL --version 8.0.11
+
+# Restaurar dependências
+RUN dotnet restore
+
+# Aguardar o banco de dados estar pronto e executar migrations
+COPY <<EOF /app/wait-and-migrate.sh
+#!/bin/bash
+echo "Aguardando banco de dados..."
+sleep 10
+
+echo "Executando migrations..."
+cd /app/Api
+dotnet ef migrations add InitialCreate --force
+dotnet ef database update
+
+echo "Iniciando aplicação..."
+dotnet run --urls http://0.0.0.0:8080
+EOF
+
+RUN chmod +x /app/wait-and-migrate.sh
+
 EXPOSE 8080
-EXPOSE 8081
 
-# This stage is used to build the service project
-FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
-ARG BUILD_CONFIGURATION=Release
-WORKDIR /src
-
-# Copy and restore dependencies (os arquivos já estão disponíveis pelo git clone do docker-compose)
-COPY ["Api/Api.csproj", "Api/"]
-RUN dotnet restore "./Api/Api.csproj"
-
-# Copy all source files
-COPY . .
-
-# Build the application
-WORKDIR "/src/Api"
-RUN dotnet build "./Api.csproj" -c $BUILD_CONFIGURATION -o /app/build
-
-# This stage is used to publish the service project to be copied to the final stage
-FROM build AS publish
-ARG BUILD_CONFIGURATION=Release
-RUN dotnet publish "./Api.csproj" -c $BUILD_CONFIGURATION -o /app/publish /p:UseAppHost=false
-
-# This stage is used in production or when running from VS in regular mode (Default when not using the Debug configuration)
-FROM base AS final
-WORKDIR /app
-COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "Api.dll"]
+# Executar script que aguarda DB e roda migrations
+CMD ["/app/wait-and-migrate.sh"]
