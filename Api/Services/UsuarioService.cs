@@ -127,7 +127,7 @@ namespace Api.Services
             var resonse = listaUsuarios.Select(u => new UsuarioResponse
             {
                 Id = u.Id,
-                Nome = u.Nome + "Teste alteração conteiner",
+                Nome = u.Nome,
                 Login = u.Login
             }).ToList();
 
