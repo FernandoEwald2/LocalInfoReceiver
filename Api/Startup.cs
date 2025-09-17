@@ -59,18 +59,18 @@ public class Startup
                 ValidateIssuer = false,
                 ValidateAudience = false
             };
-            x.Events = new JwtBearerEvents
-            {
-                OnMessageReceived = context =>
-                {
-                    var token = context.Request.Headers["Authorization"].FirstOrDefault();
-                    if (!string.IsNullOrEmpty(token))
-                    {
-                        context.Token = token; // pega o token direto, sem precisar do Bearer
-                    }
-                    return Task.CompletedTask;
-                }
-            };
+            //x.Events = new JwtBearerEvents
+            //{
+            //    OnMessageReceived = context =>
+            //    {
+            //        var token = context.Request.Headers["Authorization"].FirstOrDefault();
+            //        if (!string.IsNullOrEmpty(token))
+            //        {
+            //            context.Token = token; // pega o token direto, sem precisar do Bearer
+            //        }
+            //        return Task.CompletedTask;
+            //    }
+            //};
         });
 
         services.AddAuthorization();
