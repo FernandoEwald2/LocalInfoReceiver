@@ -35,7 +35,7 @@ namespace Api.Services
 
             // Configurações de expiração do token
             var expiresIn = int.Parse(_configuration["TokenSetting:Seconds"] ?? "86400"); // Default 24h
-            var secret = Environment.GetEnvironmentVariable("WT_SECRET") ?? _configuration["TokenSetting:Secret"];
+            var secret = Environment.GetEnvironmentVariable("JWT_SECRET") ?? _configuration["TokenSetting:Secret"];
             var issuer = _configuration["TokenSetting:Issuer"];
 
             // Verifica se a chave secreta foi configurada
