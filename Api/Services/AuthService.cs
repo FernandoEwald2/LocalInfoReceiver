@@ -1,4 +1,5 @@
 ﻿using Api.Data;
+using Api.Exceptions;
 using Api.Services.Interfaces;
 using Api.Services.Models;
 using Api.Util;
@@ -21,17 +22,17 @@ namespace Api.Services
         {
             // Verifica se as credenciais foram informadas
             if (string.IsNullOrWhiteSpace(auth.Login) || string.IsNullOrWhiteSpace(auth.Senha))
-                throw new Exception("Credenciais inválidas");
+                throw new LocalException( ExceptionEnum.Unauthorized, "Credenciais inválidas");
 
             // Busca o usuário no banco de dados
             var usuario = _context.Usuarios.Where(u => u.Login.ToUpper().Equals(auth.Login.ToUpper())).FirstOrDefault();
 
             if (usuario == null)
-                throw new Exception("Usuário não encontrado");
+                throw new LocalException(ExceptionEnum.NotFound,"Usuário não encontrado");
 
             // Verifica se a senha está correta
             if (!Criptografia.VerificarHashSalt(auth.Senha, usuario.SenhaHash, usuario.SenhaSalt))
-                throw new Exception("Credenciais inválidas");
+                throw new LocalException(ExceptionEnum.Unauthorized, "Credenciais inválidas");
 
             // Configurações de expiração do token
             var expiresIn = int.Parse(_configuration["TokenSetting:Seconds"] ?? "86400"); // Default 24h
@@ -40,7 +41,7 @@ namespace Api.Services
 
             // Verifica se a chave secreta foi configurada
             if (string.IsNullOrEmpty(secret))
-                throw new Exception("Erro interno de autenticação");
+                throw new LocalException(ExceptionEnum.InternalServerError,"Erro interno de autenticação");
 
 
             // Retorna o objeto de autenticação com o token gerado

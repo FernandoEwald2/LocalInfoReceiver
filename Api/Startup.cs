@@ -1,4 +1,5 @@
 ﻿using Api.Data;
+using Api.Exceptions;
 using Api.Services;
 using Api.Services.Interfaces;
 using Api.Util;
@@ -39,9 +40,14 @@ public class Startup
         // Registro de serviços
         services.AddScoped<IUsuarioService, UsuarioService>();
         services.AddScoped<IAuthService, AuthService>();
-
+        
         // Adiciona autenticação JWT
-        var jwtSecretKey = Encoding.ASCII.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET"));
+        var jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET");
+        if (string.IsNullOrEmpty(jwtKey))
+        {
+            throw new InvalidOperationException("JWT_SECRET environment variable is not set.");
+        }
+        var jwtSecretKey = Encoding.ASCII.GetBytes(jwtKey);
 
         services.AddAuthentication(x =>
         {
@@ -66,7 +72,7 @@ public class Startup
                     var token = context.Request.Headers["Authorization"].FirstOrDefault();
                     if (!string.IsNullOrEmpty(token))
                     {
-                        context.Token = token; // pega o token direto, sem precisar do Bearer
+                        context.Token = token; // pega o token direto, sem precisar do prefixo Bearer
                     }
                     return Task.CompletedTask;
                 }
@@ -136,6 +142,7 @@ public class Startup
 
         app.UseAuthentication();
         app.UseAuthorization();
+        app.UseMiddleware<ExceptionMiddleware>();
 
         app.UseEndpoints(endpoints =>
         {
