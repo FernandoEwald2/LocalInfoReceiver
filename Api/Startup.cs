@@ -98,6 +98,7 @@ public class Startup
         services.AddSwaggerGen(c =>
         {
             c.SwaggerDoc("v1", new OpenApiInfo { Title = "Api LocalInfo", Version = "v1" });
+            c.AddServer(new OpenApiServer { Url = "/api" });
 
             c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
             {
