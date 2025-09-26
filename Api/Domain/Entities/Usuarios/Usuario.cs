@@ -15,15 +15,69 @@ namespace Api.Domain.Entities.Usuarios
         [Column("senha_salt")]
         public byte[] SenhaSalt { get; private set; }
 
+        [Column("cep")]
+        public string Cep { get; set; }
+
+        [Column("logradouro")]
+        public string Logradouro { get; set; }
+
+        [Column("bairro")]
+        public string Bairro { get; set; }
+
+        [Column("numero")]
+        public string Numero { get; set; }
+
+        [Column("cidade")]
+        public string Cidade { get; set; }
+
+        [Column("uf")]
+        public string Estado { get; set; }
+
         public Usuario() { }
         // Construtor
-        public Usuario(string nome, string login, byte[] senhaHash, byte[] senhaSalt)
+        public Usuario(string nome, string login, byte[] senhaHash, byte[] senhaSalt, string cep, string logradouro, string bairro, string numero, string cidade, string estado)
         {
 
             SetNome(nome);
             SetLogin(login);
             SetHash(senhaHash);
             SetSalt(senhaSalt);
+            SetCep(cep);
+            SetLogradouro(logradouro);
+            Setbairro(bairro);
+            SetNumero(numero);
+            SetCidade(cidade);
+            SetEstado(estado);
+        }
+
+        public void SetEstado(string estado)
+        {
+            Estado = estado;
+        }
+
+        public void SetCidade(string cidade)
+        {
+            Cidade = cidade;
+        }
+
+        public void SetNumero(string numero)
+        {
+            Numero = numero;
+        }
+
+        public void Setbairro(string bairro)
+        {
+            Bairro = bairro;
+        }
+
+        public void SetLogradouro(string logradouro)
+        {
+            Logradouro = logradouro;
+        }
+
+        public void SetCep(string cep)
+        {
+            Cep = cep;
         }
 
         public void SetSalt(byte[] senhaSalt)
@@ -46,6 +100,7 @@ namespace Api.Domain.Entities.Usuarios
             Nome = nome;
         }
 
+
         public void AtualizarUsuario(Usuario usuario)
         {
             SetNome(usuario.Nome);
@@ -56,4 +111,6 @@ namespace Api.Domain.Entities.Usuarios
         }
 
     }
+
+
 }

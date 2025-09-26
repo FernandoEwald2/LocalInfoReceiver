@@ -82,9 +82,9 @@ namespace Api.Services
 
             byte[] hash;
             byte[] salt;
-            Criptografia.CriarHashSalt(usuarioRequest.Senha, out hash, out salt);
+            Criptografia.CriarHashSalt(usuarioRequest.Senha, out hash, out salt);//string cep, string logradouro, string bairro, string numero, string cidade, string estado
 
-            Usuario usuario = new Usuario(usuarioRequest.Nome.ToUpper(), usuarioRequest.Login, hash, salt);
+            Usuario usuario = new Usuario(usuarioRequest.Nome.ToUpper(), usuarioRequest.Login, hash, salt, usuarioRequest.Cep, usuarioRequest.Logradouro, usuarioRequest.Bairro, usuarioRequest.Numero, usuarioRequest.Cidade, usuarioRequest.Estado);
             _context.Usuarios.Add(usuario);
             await _context.SaveChangesAsync();
             return new UsuarioResponse()
@@ -128,7 +128,14 @@ namespace Api.Services
             {
                 Id = u.Id,
                 Nome = u.Nome,
-                Login = u.Login
+                Login = u.Login,
+                Numero = u.Numero,
+                Bairro = u.Bairro,
+                Cep = u.Cep,
+                Cidade = u.Cidade,
+                Estado = u.Estado,
+                Logradouro = u.Logradouro
+
             }).ToList();
 
             return new Paginacao<UsuarioResponse>(resonse, totalRecords, pageNumber, pageSize);

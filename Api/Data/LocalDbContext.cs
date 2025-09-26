@@ -13,23 +13,8 @@ namespace Api.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            modelBuilder.Entity<Usuario>()
-                .HasKey(u => u.Id);
-            modelBuilder.Entity<Usuario>()
-                .Property(u => u.Nome)
-                .IsRequired()
-                .HasMaxLength(50);
-            modelBuilder.Entity<Usuario>()
-                .Property(u => u.Login)
-                .IsRequired()
-                .HasMaxLength(50);
-            modelBuilder.Entity<Usuario>()
-                .Property(u => u.SenhaSalt)
-                .IsRequired();
-            modelBuilder.Entity<Usuario>()
-                .Property(u => u.SenhaHash)
-                .IsRequired();
+            // aplica automaticamente todas as classes que implementam IEntityTypeConfiguration
+            modelBuilder.ApplyConfigurationsFromAssembly(typeof(LocalDbContext).Assembly);
         }
     }
-
 }
