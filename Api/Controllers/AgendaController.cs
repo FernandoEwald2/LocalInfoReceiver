@@ -1,41 +1,28 @@
-﻿using Api.Services.Interfaces;
-using Aplicacao.Modelos;
+﻿using Aplicacao.Modelos;
 using Aplicacao.Modelos.Query;
+using Aplicacao.Modelos.Request;
+using Aplicacao.Modelos.Response;
 using Aplicacao.Services.Interfaces;
-using Aplicacao.Services.Models;
 using Aplicacao.Util;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Api.Controllers
 {
-
     [Route("[controller]")]
     [ApiController]
-    public class UsuarioController : ControllerBase
+    public class AgendaController : ControllerBase
     {
-        private readonly IUsuarioService _service;
-        private readonly IAuthService _authService;
+        private IAgendaService _service;
 
-        public UsuarioController(IUsuarioService service, IAuthService authService)
+        public AgendaController(IAgendaService agendaService)
         {
-            _service = service;
-            _authService = authService;
-        }
-
-        [HttpPost("login")]
-        public IActionResult Login([FromBody] Auth auth)
-        {
-            var response = _authService.Autenticar(auth);
-            if (response == null)
-                return Unauthorized(new { message = "Usuário ou senha inválidos" });
-
-            return Ok(response);
+            _service = agendaService;
         }
 
         [HttpPost]
         [Authorize]
-        public async Task<ActionResult<UsuarioResponse>> Criar(UsuarioRequest request)
+        public async Task<ActionResult<UsuarioResponse>> Criar(AgendaRequest request)
         {
             var dado = await _service.Criar(request);
             return Ok(dado);
@@ -43,16 +30,16 @@ namespace Api.Controllers
 
         [HttpGet]
         [Authorize]
-        public async Task<ActionResult<Paginacao<UsuarioResponse>>> Listar([FromQuery] UsuarioQuery query)
+        public async Task<ActionResult<Paginacao<AgendaResponse>>> Listar([FromQuery] AgendaQuery query)
         {
-            var usuarios = await _service.Listar(query);
+            var dados = await _service.Listar(query);
 
-            return Ok(usuarios);
+            return Ok(dados);
         }
 
         [HttpGet("{id}")]
         [Authorize]
-        public async Task<ActionResult<UsuarioResponse>> Obter(int id)
+        public async Task<ActionResult<AgendaResponse>> Obter(int id)
         {
             var dado = await _service.Obter(id);
             if (dado == null)
@@ -61,9 +48,10 @@ namespace Api.Controllers
             return Ok(dado);
         }
 
+
         [HttpPut("{id}")]
         [Authorize]
-        public async Task<IActionResult> Atualizar(int id, UsuarioRequest request)
+        public async Task<ActionResult<UsuarioResponse>> Atualizar(int id, AgendaRequest request)
         {
             var dado = await _service.Atualizar(id, request);
             if (dado == null)
@@ -82,6 +70,6 @@ namespace Api.Controllers
 
             return Ok(removido);
         }
-    }
 
+    }
 }
